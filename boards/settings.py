@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'forum.apps.ForumConfig',
+    'accounts.apps.AccountsConfig',
     'widget_tweaks',
 ]
 

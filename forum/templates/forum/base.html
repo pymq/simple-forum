@@ -7,8 +7,10 @@
     <link rel="stylesheet" href="{% static 'forum/css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'forum/css/app.css' %}">
     <link href="https://fonts.googleapis.com/css?family=Peralta" rel="stylesheet">
+    {% block stylesheet %}{% endblock %}
 </head>
 <body>
+{% block body %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand" href="{% url 'forum:index' %}">Simple Forum</a>
@@ -22,5 +24,6 @@
     {% block content %}
     {% endblock %}
 </div>
+{% endblock body %}
 </body>
 </html>
