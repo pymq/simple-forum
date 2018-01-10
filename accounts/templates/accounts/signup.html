@@ -1,4 +1,4 @@
-{% extends 'forum/base.html' %}
+{% extends 'base.html' %}
 
 {% load static %}
 
@@ -18,7 +18,7 @@
                         <h3 class="card-title">Sign up</h3>
                         <form method="post" novalidate>
                             {% csrf_token %}
-                            {% include 'forum/includes/form.html' %}
+                            {% include 'includes/form.html' %}
                             <button type="submit" class="btn btn-primary">Create an account</button>
                         </form>
 
