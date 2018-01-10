@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from .models import Topic, User, Board, Post
 from django.views import generic
-from .forms import NewTopicForm
+from .forms import NewTopicForm, PostForm
 from django.contrib.auth.decorators import login_required
 
 
@@ -33,7 +33,27 @@ def new_topic(request, pk):
                 topic=topic,
                 created_by=request.user
             )
-            return redirect('forum:board_topics', pk=board.pk)  # TODO: redirect to the created topic page
+            return redirect('forum:topic_posts', pk=board.pk, topic_pk=topic.pk)
     else:
         form = NewTopicForm()
     return render(request, 'forum/new_topic.html', {'board': board, 'form': form})
+
+
+def topic_posts(request, pk, topic_pk):
+    topic = get_object_or_404(Topic, board__pk=pk, pk=topic_pk)
+    return render(request, 'forum/topic_posts.html', {'topic': topic})
+
+@login_required
+def reply_topic(request, pk, topic_pk):
+    topic = get_object_or_404(Topic, board__pk=pk, pk=topic_pk)
+    if request.method == 'POST':
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.topic = topic
+            post.created_by = request.user
+            post.save()
+            return redirect('forum:topic_posts', pk=pk, topic_pk=topic_pk)
+    else:
+        form = PostForm()
+    return render(request, 'forum/reply_topic.html', {'topic': topic, 'form': form})
