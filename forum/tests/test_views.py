@@ -1,10 +1,10 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
-from django.core.urlresolvers import reverse  # , resolve
+from django.core.urlresolvers import reverse
 from django.urls import resolve
-from .models import Board, Post, Topic
-from .views import BoardTopicsView, IndexView, new_topic
-from .forms import NewTopicForm
+from forum.models import Board, Post, Topic
+from forum.views import BoardTopicsView, IndexView, new_topic
+from forum.forms import NewTopicForm
 
 
 class IndexViewTests(TestCase):
