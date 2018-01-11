@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from .models import Topic, User, Board, Post
+from django.db.models import Count, F
 from django.views import generic
 from .forms import NewTopicForm, PostForm
 from django.contrib.auth.decorators import login_required
@@ -16,6 +17,13 @@ class BoardTopicsView(generic.DetailView):
     model = Board
     template_name = 'forum/topics.html'
     context_object_name = 'board'
+
+
+def board_topics(request, pk):
+    board = get_object_or_404(Board, pk=pk)
+    topics = board.topics.order_by('-last_updated').annotate(replies=Count('posts') - 1)
+    return render(request, 'forum/topics.html', {'board': board, 'topics': topics})
+
 
 @login_required
 def new_topic(request, pk):
@@ -41,7 +49,10 @@ def new_topic(request, pk):
 
 def topic_posts(request, pk, topic_pk):
     topic = get_object_or_404(Topic, board__pk=pk, pk=topic_pk)
+    topic.views = F('views') + 1
+    topic.save()
     return render(request, 'forum/topic_posts.html', {'topic': topic})
+
 
 @login_required
 def reply_topic(request, pk, topic_pk):
