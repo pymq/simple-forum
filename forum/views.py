@@ -4,6 +4,8 @@ from .models import Topic, User, Board, Post
 from django.db.models import Count, F
 from django.views import generic
 from .forms import NewTopicForm, PostForm
+from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 
 
@@ -68,3 +70,23 @@ def reply_topic(request, pk, topic_pk):
     else:
         form = PostForm()
     return render(request, 'forum/reply_topic.html', {'topic': topic, 'form': form})
+
+
+@method_decorator(login_required, 'dispatch')
+class PostUpdateView(generic.UpdateView):
+    model = Post
+    fields = ('message',)
+    template_name = 'forum/edit_post.html'
+    pk_url_kwarg = 'post_pk'
+    context_object_name = 'post'
+
+    def form_valid(self, form):
+        post = form.save(commit=False)
+        post.updated_by = self.request.user
+        post.updated_at = timezone.now()
+        post.save()
+        return redirect('forum:topic_posts', pk=post.topic.board.pk, topic_pk=post.topic.pk)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(created_by=self.request.user)
