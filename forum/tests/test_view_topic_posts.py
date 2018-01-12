@@ -20,5 +20,4 @@ class TopicPostsTests(TestCase):
 
     def test_view_function(self):
         view = resolve('/boards/1/topics/1/')
-        pass
-        self.assertEquals(view.func, topic_posts)
+        self.assertEquals(view.view_name, 'forum:topic_posts')

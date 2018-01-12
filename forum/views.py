@@ -9,22 +9,51 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 
 
-class IndexView(generic.ListView):
+class BoardListView(generic.ListView):
     template_name = 'forum/index.html'
     context_object_name = 'boards'
     model = Board
 
 
-class BoardTopicsView(generic.DetailView):
-    model = Board
+class TopicListView(generic.ListView):
+    model = Topic
+    context_object_name = 'topics'
     template_name = 'forum/topics.html'
-    context_object_name = 'board'
+    paginate_by = 20
+
+    def get_queryset(self):
+        self.board = get_object_or_404(Board, pk=self.kwargs.get('pk'))
+        queryset = self.board.topics.order_by('-last_updated').annotate(replies=Count('posts') - 1)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        kwargs['board'] = self.board
+        return super().get_context_data(**kwargs)
 
 
-def board_topics(request, pk):
-    board = get_object_or_404(Board, pk=pk)
-    topics = board.topics.order_by('-last_updated').annotate(replies=Count('posts') - 1)
-    return render(request, 'forum/topics.html', {'board': board, 'topics': topics})
+# @method_decorator(login_required, 'dispatch')
+# class TopicCreateView(generic.CreateView):
+#     model = Topic
+#     form_class = NewTopicForm
+#     template_name = 'forum/new_topic.html'
+#     context_object_name = 'board'
+#     # pk_url_kwarg = 'pk' #
+#
+#
+#     def form_valid(self, form):
+#         topic = form.save(commit=False)
+#         topic.board = self.request.board
+#         topic.starter = self.request.user
+#         topic.save()
+#         post = Post.objects.create(
+#             message=form.cleaned_data.get('message'),
+#             topic=topic,
+#             created_by=self.request.user
+#         )
+#         return redirect('forum:topic_posts', pk=self.request.board.pk, topic_pk=topic.pk)
+#
+#     def get_queryset(self):
+#         return Board.objects.get(self.kwargs.get('pk'))
 
 
 @login_required
@@ -47,6 +76,24 @@ def new_topic(request, pk):
     else:
         form = NewTopicForm()
     return render(request, 'forum/new_topic.html', {'board': board, 'form': form})
+
+
+class PostListView(generic.ListView):
+    model = Post
+    context_object_name = 'posts'
+    template_name = 'forum/topic_posts.html'
+    paginate_by = 10
+
+    def get_context_data(self, **kwargs):
+        self.topic.views = F('views') + 1
+        self.topic.save()
+        kwargs['topic'] = self.topic
+        return super().get_context_data(**kwargs)
+
+    def get_queryset(self):
+        self.topic = get_object_or_404(Topic, board__pk=self.kwargs.get('pk'), pk=self.kwargs.get('topic_pk'))
+        queryset = self.topic.posts.order_by('created_at')
+        return queryset
 
 
 def topic_posts(request, pk, topic_pk):

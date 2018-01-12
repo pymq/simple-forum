@@ -27,7 +27,7 @@
         <tbody>
         {% for topic in topics %}
             <tr>
-                <td><a href="{% url 'forum:topic_posts' board.pk topic.pk%}">{{ topic.subject }}</a></td>
+                <td><a href="{% url 'forum:topic_posts' board.pk topic.pk %}">{{ topic.subject }}</a></td>
                 <td>{{ topic.starter.username }}</td>
                 <td>{{ topic.replies }}</td>
                 <td>{{ topic.views }}</td>
@@ -36,4 +36,5 @@
         {% endfor %}
         </tbody>
     </table>
+    {% include 'includes/pagination.html' %}
 {% endblock %}
