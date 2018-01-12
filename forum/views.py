@@ -1,3 +1,4 @@
+import django.urls
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from .models import Topic, User, Board, Post
@@ -82,11 +83,14 @@ class PostListView(generic.ListView):
     model = Post
     context_object_name = 'posts'
     template_name = 'forum/topic_posts.html'
-    paginate_by = 10
+    paginate_by = 20
 
     def get_context_data(self, **kwargs):
-        self.topic.views = F('views') + 1
-        self.topic.save()
+        session_key = 'viewed_topic_{}'.format(self.topic.pk)
+        if not self.request.session.get(session_key, False):
+            self.topic.views = F('views') + 1
+            self.topic.save()
+            self.request.session[session_key] = True
         kwargs['topic'] = self.topic
         return super().get_context_data(**kwargs)
 
@@ -113,7 +117,12 @@ def reply_topic(request, pk, topic_pk):
             post.topic = topic
             post.created_by = request.user
             post.save()
-            return redirect('forum:topic_posts', pk=pk, topic_pk=topic_pk)
+            topic.last_updated = timezone.now()
+            topic.save()
+
+            topic_url = django.urls.reverse('forum:topic_posts', kwargs={'pk': pk, 'topic_pk': topic_pk})
+            topic_post_url = f'{topic_url}?page={topic.get_page_count()}#{post.pk}'
+            return redirect(topic_post_url)
     else:
         form = PostForm()
     return render(request, 'forum/reply_topic.html', {'topic': topic, 'form': form})
@@ -132,7 +141,11 @@ class PostUpdateView(generic.UpdateView):
         post.updated_by = self.request.user
         post.updated_at = timezone.now()
         post.save()
-        return redirect('forum:topic_posts', pk=post.topic.board.pk, topic_pk=post.topic.pk)
+        topic_url = django.urls.reverse('forum:topic_posts', kwargs={'pk': post.topic.board.pk, 'topic_pk': post.topic.pk})
+        topic_post_url = f'{topic_url}?page={post.topic.get_page_count()}#{post.pk}'
+        return redirect(topic_post_url)
+
+        # return redirect('forum:topic_posts', pk=post.topic.board.pk, topic_pk=post.topic.pk)
 
     def get_queryset(self):
         queryset = super().get_queryset()

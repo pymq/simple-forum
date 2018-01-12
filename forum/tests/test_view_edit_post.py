@@ -88,7 +88,9 @@ class SuccessfulPostUpdateViewTests(PostUpdateViewTestCase):
         '''
         A valid form submission should redirect the user
         '''
-        topic_posts_url = reverse('forum:topic_posts', kwargs={'pk': self.board.pk, 'topic_pk': self.topic.pk})
+        url = reverse('forum:topic_posts', kwargs={'pk': self.board.pk, 'topic_pk': self.topic.pk})
+        # topic_posts_url = f'{url}?page=1#2'
+        topic_posts_url = f'{url}?page={self.topic.get_page_count()}#{self.post.pk}'
         self.assertRedirects(self.response, topic_posts_url)
 
     def test_post_changed(self):
