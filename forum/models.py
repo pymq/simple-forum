@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import Truncator
 from django.utils.html import mark_safe
-from markdown import markdown
+import mistune
 
 import math
 
@@ -64,4 +64,4 @@ class Post(models.Model):
         return truncated_message.chars(30)
 
     def get_message_as_markdown(self):
-        return mark_safe(markdown(self.message, safe_mode='escape'))
+        return mark_safe(mistune.markdown(self.message, hard_wrap=True))

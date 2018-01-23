@@ -28,10 +28,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'django.contrib.humanize',
+
     'forum.apps.ForumConfig',
     'accounts.apps.AccountsConfig',
+
     'widget_tweaks',
 ]
 

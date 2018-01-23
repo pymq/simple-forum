@@ -60,3 +60,4 @@ target/
 .idea
 db.sqlite3
 .env
+.env.prod

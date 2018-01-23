@@ -1,6 +1,5 @@
 Django==1.11
 django-widget-tweaks==1.4.1
-Markdown==2.6.11
-pytz==2017.3
 python-decouple==3.1
 dj-database-url==0.4.2
+mistune==0.8.3
